@@ -8,7 +8,7 @@
 
 #include	<xc.h>
 #include	"uart.h"
-#include	"lib/fifo.h"
+#include	"../fifo/fifo.h"
 
 /* ---------------------------------- */
 fifo_t	fifo_transfer, fifo_receive;
@@ -16,7 +16,13 @@ fifo_t	fifo_transfer, fifo_receive;
 
 
 /* ---------------------------------- */
+#if	defined(_PIC16F1823_H_)
+void	initUart( unsigned long baudrate, unsigned char txsel, unsigned char rxsel )
+#elif	defined(_PIC16F1827_H_)
+void	initUart( unsigned long baudrate, unsigned char txsel, unsigned char rxsel )
+#elif	defined(_PIC16F1939_H_)
 void	initUart( unsigned long baudrate )
+#endif
 {
 	unsigned int	x;
 	unsigned int	int_spbrgh, int_spbrgl;
@@ -41,15 +47,38 @@ void	initUart( unsigned long baudrate )
 	TXEN	= 1;
 	CREN	= 1;
 
-#ifdef	defined _PIC16F1823_H_
-	TXCKSEL	= 0;	RXDTSEL	= 0;
-	TRISC4	= 0;	TRISC5	= 1;
+
+#if	defined _PIC16F1823_H_
+	TXCKSEL	= txsel;	RXDTSEL	= rxsel;
+	if( txsel == TX_RC4 ){
+		TRISC4	= 0;
+	}else if( txsel == TX_RA0 ){
+		TRISA0	= 0;
+	}
+	if( rxsel == RX_RC5 ){
+		TRISC5	= 1;
+	}else if( rxsel == RX_RA1 ){
+		TRISA1	= 1;
+	}
+
+#elif	defined _PIC16F1827_H_
+	TXCKSEL	= txsel;	RXDTSEL	= rxsel;
+	if( txsel == TX_RB2 ){
+		TRISB2	= 0;
+	}else if( txsel == TX_RB5 ){
+		TRISB5	= 0;
+	}
+	if( rxsel == RX_RB1 ){
+		TRISB1	= 1;
+	}else if( rxsel == RX_RB2 ){
+		TRISB2	= 1;
+	}
+
 #elif	defined _PIC16F1939_H_
 	TRISC6	= 0;	TRISC7	= 1;
 #endif
 
 }
-
 /* ---------------------------------- */
 
 

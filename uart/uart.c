@@ -17,11 +17,13 @@ fifo_t	fifo_transfer, fifo_receive;
 
 /* ---------------------------------- */
 #if	defined(_PIC16F1823_H_)
-void	initUart( unsigned long baudrate, unsigned char txsel, unsigned char rxsel )
+void	initUart( unsigned long baudrate, unsigned long xtal_freq, unsigned char txsel, unsigned char rxsel )
 #elif	defined(_PIC16F1827_H_)
-void	initUart( unsigned long baudrate, unsigned char txsel, unsigned char rxsel )
+void	initUart( unsigned long baudrate, unsigned long xtal_freq, unsigned char txsel, unsigned char rxsel )
 #elif	defined(_PIC16F1939_H_)
-void	initUart( unsigned long baudrate )
+void	initUart( unsigned long baudrate, unsigned long xtal_freq )
+#elif	defined(_PIC16F1509_H_)
+void	initUart( unsigned long baudrate, unsigned long xtal_freq )
 #endif
 {
 	unsigned int	x;
@@ -30,7 +32,7 @@ void	initUart( unsigned long baudrate )
 	initializeFIFO( &fifo_transfer );
 	initializeFIFO( &fifo_receive );
 
-	x	= ( ( XTAL_FREQ / baudrate ) / 64 ) - 1;
+	x	= ( ( xtal_freq / baudrate ) / 64 ) - 1;
 
 	int_spbrgh	= ( x & 0xFF00 ) >> 8;
 	int_spbrgl	= x & 0x00FF;
@@ -47,6 +49,7 @@ void	initUart( unsigned long baudrate )
 	TXEN	= 1;
 	CREN	= 1;
 
+	GIE	= 1;	PEIE	= 1;
 
 #if	defined _PIC16F1823_H_
 	TXCKSEL	= txsel;	RXDTSEL	= rxsel;
@@ -76,6 +79,9 @@ void	initUart( unsigned long baudrate )
 
 #elif	defined _PIC16F1939_H_
 	TRISC6	= 0;	TRISC7	= 1;
+
+#elif	defined _PIC16F1509_H_
+	TRISB7	= 0;	TRISB5	= 1;
 #endif
 
 }
